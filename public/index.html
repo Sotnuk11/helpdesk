@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpDesk | System</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="lang-switcher">
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn active" data-lang="uk">UK</button>
+    <button class="lang-btn" data-lang="pl">PL</button>
+</div>
+
+<div class="glass-panel auth-container" id="authSection">
+    <div class="brand-header">
+        <span class="material-symbols-outlined logo-icon">terminal</span>
+        <h1 id="auth-title" data-i18n="title_login">HelpDesk</h1>
+        <p class="subtitle" data-i18n="subtitle_login">Secure Authentication Gateway</p>
+    </div>
+    
+    <form id="authForm" novalidate>
+        <div class="input-group">
+            <span class="material-symbols-outlined input-icon">mail</span>
+            <input type="email" id="email" required data-i18n="email_ph" placeholder="name@company.com" autocomplete="username">
+        </div>
+        <div class="input-group">
+            <span class="material-symbols-outlined input-icon">lock</span>
+            <input type="password" id="password" required data-i18n="pass_ph" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary">
+            <span id="submitBtnText" data-i18n="btn_login">Ініціалізувати вхід</span>
+            <span class="material-symbols-outlined">login</span>
+        </button>
+    </form>
+    <div id="message" class="alert" role="alert"></div>
+    <div class="toggle-wrapper">
+        <span id="toggle-text" data-i18n="no_access">Немає доступу?</span> 
+        <button type="button" class="btn-text" id="toggle-btn" data-i18n="btn_register">Створити акаунт</button>
+    </div>
+</div>
+
+<div class="dashboard-layout" id="appSection" style="display: none;">
+    <aside class="glass-panel sidebar">
+        <div class="sidebar-brand">
+            <span class="material-symbols-outlined logo-icon">terminal</span>
+            <h2>HelpDesk</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" id="nav-user">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span data-i18n="nav_new_ticket">Нова заявка</span>
+            </div>
+            <div class="nav-item" id="nav-admin" style="display: none;">
+                <span class="material-symbols-outlined">monitoring</span>
+                <span data-i18n="nav_admin">Консоль Адміна</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-badge" id="currentUserDisplay">ID: --</div>
+            <button class="btn-logout" id="logoutBtn">
+                <span class="material-symbols-outlined">logout</span>
+                <span data-i18n="btn_logout">Вийти</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="glass-panel content-card" id="ticketSection">
+            <div class="card-header">
+                <h2 data-i18n="card_create_title">Створити заявку</h2>
+                <p data-i18n="card_create_sub">Опишіть інцидент для служби підтримки</p>
+            </div>
+            <form id="ticketForm" novalidate>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <input type="text" id="title" required data-i18n="ph_subject" placeholder="Тема інциденту">
+                    </div>
+                    <div class="input-group select-wrapper">
+                        <select id="priority">
+                            <option value="Low" data-i18n="pri_low">Низький (Low)</option>
+                            <option value="Medium" selected data-i18n="pri_med">Середній (Medium)</option>
+                            <option value="High" data-i18n="pri_high">Критичний (High)</option>
+                        </select>
+                        <span class="material-symbols-outlined select-icon">expand_more</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <textarea id="description" rows="5" required data-i18n="ph_desc" placeholder="Технічні деталі та логи..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span data-i18n="btn_send">Відправити у систему</span>
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </form>
+            <div id="ticketMessage" class="alert" role="alert"></div>
+        </div>
+
+        <div class="glass-panel content-card admin-view" id="adminSection" style="display: none;">
+            <div class="card-header flex-between">
+                <div>
+                    <h2 data-i18n="admin_title">Глобальний моніторинг</h2>
+                    <p data-i18n="admin_sub">Активні тікети в системі</p>
+                </div>
+                <button class="btn-icon" id="refreshBtn" title="Оновити дані">
+                    <span class="material-symbols-outlined">refresh</span>
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="th_id">ID</th>
+                            <th data-i18n="th_init">Ініціатор</th>
+                            <th data-i18n="th_inc">Інцидент</th>
+                            <th data-i18n="th_pri">Рівень</th>
+                            <th data-i18n="th_stat">Статус</th>
+                            <th data-i18n="th_act">Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTicketsBody"></tbody>
+                </table>
+            </div>
+            <div id="adminMessage" class="alert" role="alert"></div>
+        </div>
+    </main>
+</div>
+
+<div id="ticketModal" class="modal-overlay" style="display: none;">
+    <div class="glass-panel modal-content">
+        <div class="card-header flex-between">
+            <h2><span data-i18n="modal_title">Деталі інциденту #</span><span id="modalId"></span></h2>
+            <button class="btn-icon" id="closeModalBtn"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid" style="margin-bottom: 1rem;">
+                <div>
+                    <p class="text-muted" data-i18n="modal_init">Ініціатор:</p>
+                    <p id="modalUser" style="font-family: var(--font-mono);"></p>
+                </div>
+                <div>
+                    <p class="text-muted" data-i18n="modal_date">Створено:</p>
+                    <p id="modalDate" style="font-family: var(--font-mono); color: var(--primary);"></p>
+                </div>
+            </div>
+            
+            <p class="text-muted" data-i18n="modal_desc">Повний опис інциденту:</p>
+            <div class="ticket-description-box" id="modalDescription"></div>
+            
+            <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+            
+            <p class="text-muted" data-i18n="modal_reply">Звіт Адміністратора (Рішення):</p>
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <textarea id="modalAdminReply" rows="3" placeholder="..." style="background: rgba(0,0,0,0.6);"></textarea>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <p class="text-muted" style="margin-bottom: 0.5rem;" data-i18n="modal_change">Оновити статус:</p>
+                    <div class="input-group select-wrapper">
+                        <select id="modalStatusSelect">
+                            <option value="Open" data-i18n="status_open">Відкрито (Open)</option>
+                            <option value="In Progress" data-i18n="status_prog">В роботі (In Progress)</option>
+                            <option value="Resolved" data-i18n="status_res">Вирішено (Resolved)</option>
+                        </select>
+                        <span class="material-symbols-outlined select-icon">expand_more</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: flex-end; padding-bottom: 1.5rem;">
+                    <button id="updateStatusBtn" class="btn-primary">
+                        <span data-i18n="btn_save">Зберегти зміни</span>
+                    </button>
+                </div>
+            </div>
+            <div id="modalAlert" class="alert" style="margin-top: 0.5rem;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="/main.js"></script>
+</body>
+</html>
