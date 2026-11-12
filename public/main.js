@@ -54,11 +54,11 @@ const dict = {
     }
 };
 
-let currentLang = localStorage.getItem('nexus_lang') || 'uk';
+let currentLang = localStorage.getItem('helpdesk_lang') || 'uk';
 
 function setLanguage(lang) {
     currentLang = lang;
-    localStorage.setItem('nexus_lang', lang);
+    localStorage.setItem('helpdesk_lang', lang);
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');

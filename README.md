@@ -1,5 +1,7 @@
 # HelpDesk
 
+[![CI](https://github.com/Sotnuk11/helpdesk/actions/workflows/ci.yml/badge.svg)](https://github.com/Sotnuk11/helpdesk/actions/workflows/ci.yml)
+
 A secure help desk ticketing system. Users register and submit support tickets; admins review them, change their status and reply.
 Built with **Node.js, Express and PostgreSQL**, with a focus on application security. The vanilla JavaScript frontend supports Ukrainian, English and Polish.
 
