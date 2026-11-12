@@ -107,6 +107,15 @@ function createApp({ db, jwtSecret, corsOrigin = 'http://localhost:3000', disabl
         } catch (err) { next(err); }
     });
 
+    app.get('/tickets/mine', authenticateToken, async (req, res, next) => {
+        try {
+            const result = await db.query(
+                `SELECT id, title, priority, status, admin_reply, created_at
+                 FROM tickets WHERE user_id = $1 ORDER BY id DESC`, [req.user.id]);
+            res.json(result.rows);
+        } catch (err) { next(err); }
+    });
+
     app.get('/admin/tickets', authenticateToken, authorizeRoles('admin'), async (req, res, next) => {
         try {
             const result = await db.query(`

@@ -11,14 +11,14 @@ Built with **Node.js, Express and PostgreSQL**, with a focus on application secu
 - Role-based access control: `user` creates tickets, `admin` views all tickets and updates status/reply
 - Admin console with ticket statistics, detail view and status workflow (Open → In Progress → Resolved)
 - Language switcher (UK / EN / PL)
-- 12 automated tests (Node's built-in test runner, no database needed)
+- 13 automated tests (Node's built-in test runner, no database needed)
 
 ## Security design
 
 | Threat | Mitigation |
 |---|---|
 | SQL injection | All queries are parameterized (`$1, $2, ...`) |
-| XSS | Ticket data is stored as plain text and rendered with `textContent` / DOM APIs, never `innerHTML`; strict CSP (`script-src 'self'`, `object-src 'none'`) via Helmet |
+| XSS | Ticket data is stored as plain text and rendered with `textContent` and DOM APIs (the few remaining `innerHTML` uses only insert fixed text and numbers); strict CSP (`script-src 'self'`, `object-src 'none'`) via Helmet |
 | Brute force | `express-rate-limit`: 5 logins / 15 min, 3 registrations / hour, 100 requests / 15 min on tickets and admin routes |
 | Token forgery | Algorithm pinned to HS256 (blocks `alg: none`); tokens verified on every request; JWT secret must be 32+ characters or the server refuses to start |
 | Privilege escalation | Role is read from the signed token on the server; admin routes sit behind `authorizeRoles('admin')`; user input never sets a role |
@@ -65,6 +65,7 @@ The tests run the real Express app against a fake database object, and cover val
 |---|---|---|---|
 | POST | `/register` | public | `{ email, password }`, password 8-128 chars |
 | POST | `/login` | public | returns `{ token, role }` |
+| GET | `/tickets/mine` | user, admin | your own tickets with admin replies |
 | POST | `/tickets` | user, admin | `{ title (≤150), description (≤5000), priority: Low\|Medium\|High }` |
 | GET | `/admin/tickets` | admin | all tickets with author e-mail |
 | PUT | `/admin/tickets/:id/status` | admin | `{ status: Open\|In Progress\|Resolved, admin_reply? }` |

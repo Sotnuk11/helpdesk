@@ -16,6 +16,7 @@ const dict = {
         btn_save: "Зберегти зміни", status_open: "Відкрито (Open)", status_prog: "В роботі (In Progress)", status_res: "Вирішено (Resolved)",
         js_scan: "Сканування бази даних...", js_clean: "Аномалій не виявлено. Система чиста.", js_analyze: "Аналіз",
         js_open: "Відкрито", js_prog: "В роботі", js_res: "Вирішено",
+        my_tickets: "Мої заявки", no_tickets: "Заявок ще немає", reply_label: "Відповідь:",
         stat_tot: "Всього тікетів", stat_act: "Активні", stat_res: "Вирішені"
     },
     en: {
@@ -33,6 +34,7 @@ const dict = {
         btn_save: "Save Changes", status_open: "Open", status_prog: "In Progress", status_res: "Resolved",
         js_scan: "Scanning database...", js_clean: "No anomalies detected. System is clean.", js_analyze: "Analyze",
         js_open: "Open", js_prog: "In Progress", js_res: "Resolved",
+        my_tickets: "My tickets", no_tickets: "No tickets yet", reply_label: "Reply:",
         stat_tot: "Total Tickets", stat_act: "Active", stat_res: "Resolved"
     },
     pl: {
@@ -50,6 +52,7 @@ const dict = {
         btn_save: "Zapisz Zmiany", status_open: "Otwarte (Open)", status_prog: "W toku (In Progress)", status_res: "Rozwiązane (Resolved)",
         js_scan: "Skanowanie bazy danych...", js_clean: "Nie wykryto anomalii. System czysty.", js_analyze: "Analiza",
         js_open: "Otwarte", js_prog: "W toku", js_res: "Rozwiązane",
+        my_tickets: "Moje zgłoszenia", no_tickets: "Brak zgłoszeń", reply_label: "Odpowiedź:",
         stat_tot: "Wszystkie", stat_act: "Aktywne", stat_res: "Rozwiązane"
     }
 };
@@ -141,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (role === 'admin') {
             navAdmin.style.display = 'flex'; activateNav('nav-admin', adminSection, [ticketSection]); window.loadAdminTickets();
         } else { navAdmin.style.display = 'none'; activateNav('nav-user', ticketSection, [adminSection]); }
+        loadMyTickets();
     }
 
     function activateNav(navId, sectionToShow, sectionsToHide) {
@@ -187,10 +191,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
                 body: JSON.stringify({ title: document.getElementById('title').value, description: document.getElementById('description').value, priority: document.getElementById('priority').value })
             });
-            if (response.ok) { showMessage(msgDiv, 'OK', 'success'); e.target.reset(); } 
+            if (response.ok) { showMessage(msgDiv, 'OK', 'success'); e.target.reset(); loadMyTickets(); } 
             else { if (response.status === 401 || response.status === 403) performLogout(); showMessage(msgDiv, 'Error', 'error'); }
         } catch (err) { showMessage(msgDiv, 'Error', 'error'); }
     });
+
+    async function loadMyTickets() {
+        const box = document.getElementById('myTickets');
+        if (!box || !userToken) return;
+        try {
+            const response = await fetch('/tickets/mine', { headers: { 'Authorization': `Bearer ${userToken}` } });
+            if (!response.ok) { if (response.status === 401) performLogout(); return; }
+            const rows = await response.json();
+            box.textContent = '';
+            if (rows.length === 0) { box.textContent = dict[currentLang].no_tickets; return; }
+            rows.forEach(t => {
+                const card = document.createElement('div');
+                card.style.cssText = 'padding: 0.6rem 0; border-bottom: 1px solid var(--border, #333);';
+                const head = document.createElement('strong');
+                head.textContent = `#${t.id} ${t.title}`;
+                const meta = document.createElement('div');
+                meta.style.cssText = 'font-size: 0.85rem; opacity: 0.8;';
+                meta.textContent = `${t.priority} · ${t.status}`;
+                card.append(head, meta);
+                if (t.admin_reply) {
+                    const reply = document.createElement('div');
+                    reply.textContent = `${dict[currentLang].reply_label} ${t.admin_reply}`;
+                    card.appendChild(reply);
+                }
+                box.appendChild(card);
+            });
+        } catch (err) { /* network error: leave the list as is */ }
+    }
 
     let currentTickets = [];
 

@@ -106,6 +106,15 @@ test('ticket creation validates input and passes the token user id', async () =>
     assert.deepEqual(queries[0].params, ['Printer', 'broken', 'High', 7]);
 });
 
+test('users can list only their own tickets', async () => {
+    assert.equal((await call('GET', '/tickets/mine')).status, 401);
+    reset();
+    const res = await call('GET', '/tickets/mine', { auth: token({ id: 7, role: 'user' }) });
+    assert.equal(res.status, 200);
+    assert.deepEqual(queries[0].params, [7], 'query must be filtered by the id from the token');
+    assert.ok(queries[0].sql.includes('user_id = $1'));
+});
+
 test('role comes from the verified token, not the request body', async () => {
     const auth = token({ id: 7, role: 'user' });
     assert.equal((await call('GET', '/admin/tickets', { auth })).status, 403);

@@ -5,8 +5,10 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
+const validator = require('validator');
 
-const email = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+// Same normalization as the login route, otherwise some addresses could never log in.
+const email = validator.normalizeEmail((process.env.ADMIN_EMAIL || '').trim(), { gmail_remove_dots: false }) || '';
 const password = process.env.ADMIN_PASSWORD || '';
 if (!email.includes('@') || password.length < 12) {
     console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 12 characters).');
